@@ -1,51 +1,31 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const User = sequelize.define("User", {
+const Contact = sequelize.define("Contact", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         allowNull: false,
         primaryKey: true,
     },
-    fullname: {
-        type: DataTypes.STRING(100),
+    fullName: {
+        type: DataTypes.STRING(255),
         allowNull: false,
     },
     email: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(255),
         allowNull: false,
         validate: {
             isEmail: true,
-        }
-    },
-    password: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-    },
-    address: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+        },
     },
     phone: {
         type: DataTypes.STRING(20),
         allowNull: true,
     },
-    role: {
-        type: DataTypes.TINYINT,
+    content: {
+        type: DataTypes.TEXT,
         allowNull: false,
-    },
-    image: {
-        type: DataTypes.TEXT('long'),
-        allowNull: true,
-    },
-    birthday: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    gender: {
-        type: DataTypes.TINYINT,
-        allowNull: true,
     },
     status: {
         type: DataTypes.TINYINT,
@@ -56,8 +36,8 @@ const User = sequelize.define("User", {
         allowNull: true,
     },
     deleted: {
-        type: DataTypes.TINYINT,
-        defaultValue: 0, // Đặt giá trị mặc định là 0 (false)
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
     createdAt: {
         type: DataTypes.DATE,
@@ -72,8 +52,8 @@ const User = sequelize.define("User", {
         allowNull: true,
     },
 }, {
-    tableName: "users",
+    tableName: "contacts", 
     timestamps: true,
 });
 
-module.exports = User;
+module.exports = Contact;

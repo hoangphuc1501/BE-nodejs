@@ -1,6 +1,12 @@
+
 const jwt = require('jsonwebtoken');
 
 module.exports.authenticateToken = (req, res, next) => {
+    // bỏ qua các đường dẫn
+    // const whiteList = ['/about', '/contact', '/products'];
+    // if(whiteList.includes(req.originalUrl)) {
+    //     return next();
+    // }
     const token = req.headers['authorization']?.split(' ')[1]; // Lấy token từ "Bearer <token>"
 
     if (!token) {

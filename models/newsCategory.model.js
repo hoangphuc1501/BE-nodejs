@@ -1,55 +1,38 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const User = sequelize.define("User", {
+const NewsCategory = sequelize.define("NewsCategory", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         allowNull: false,
         primaryKey: true,
     },
-    fullname: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
-    },
-    email: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
-        validate: {
-            isEmail: true,
-        }
-    },
-    password: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-    },
-    address: {
+    name: {
         type: DataTypes.STRING(255),
-        allowNull: true,
-    },
-    phone: {
-        type: DataTypes.STRING(20),
-        allowNull: true,
-    },
-    role: {
-        type: DataTypes.TINYINT,
         allowNull: false,
     },
     image: {
-        type: DataTypes.TEXT('long'),
+        type: DataTypes.STRING(255),
         allowNull: true,
     },
-    birthday: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    gender: {
-        type: DataTypes.TINYINT,
+    description: {
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     status: {
         type: DataTypes.TINYINT,
         allowNull: false,
+        defaultValue: 1,
+    },
+    parentID: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    slug: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        unique: true,
     },
     position: {
         type: DataTypes.INTEGER,
@@ -57,7 +40,7 @@ const User = sequelize.define("User", {
     },
     deleted: {
         type: DataTypes.TINYINT,
-        defaultValue: 0, // Đặt giá trị mặc định là 0 (false)
+        defaultValue: 0,
     },
     createdAt: {
         type: DataTypes.DATE,
@@ -72,8 +55,8 @@ const User = sequelize.define("User", {
         allowNull: true,
     },
 }, {
-    tableName: "users",
+    tableName: "newscategories",
     timestamps: true,
 });
 
-module.exports = User;
+module.exports = NewsCategory;

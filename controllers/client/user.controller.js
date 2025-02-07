@@ -10,17 +10,17 @@ const generateHelper = require("../../helpers/generate.helper");
 const sendMailHelper = require("../../helpers/sendMail.helper");
 
 // Đăng ký
-    module.exports.register =  async (req, res) => {
-    try{
-        const {fullname, email, phone, password } = req.body;
+module.exports.register = async (req, res) => {
+    try {
+        const { fullname, email, phone, password } = req.body;
         // Kiểm tra nếu email đã tồn tại
-        const existingUser = await User.findOne({ 
-            where: { 
+        const existingUser = await User.findOne({
+            where: {
                 email,
                 deleted: 0,
                 status: 1
-        },
-        raw:true
+            },
+            raw: true
         });
         if (existingUser) {
             return res.status(400).json({
@@ -31,7 +31,7 @@ const sendMailHelper = require("../../helpers/sendMail.helper");
         // Lấy position lớn nhất hiện có
         const maxPositionUser = await User.findOne({
             attributes: ["position"],
-            order: [["position", "DESC"]] 
+            order: [["position", "DESC"]]
         });
 
         let newPosition = 1;
@@ -47,10 +47,10 @@ const sendMailHelper = require("../../helpers/sendMail.helper");
             phone,
             password: hashedPassword,
             role: 0,
-            status: 1, 
-            deleted: 0, 
+            status: 1,
+            deleted: 0,
             position: newPosition
-            });
+        });
         return res.status(200).json({
             code: "success",
             message: "Đăng ký thành công!",
@@ -60,25 +60,26 @@ const sendMailHelper = require("../../helpers/sendMail.helper");
                 phone,
             }
         })
-    }catch (error) {
+    } catch (error) {
         console.error(error);
         return res.status(500).json({
             code: "error",
             message: "Đã xảy ra lỗi, vui lòng thử lại sau",
         });
     }
-    }
+}
 
 // đăng nhập
-module.exports.login =  async (req, res) => {
-    try{
-        const {email, password} = req.body;
-        const user = await User.findOne({ 
-        where: { 
-            email,
-            deleted: 0
-        },
-        raw:true });
+module.exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({
+            where: {
+                email,
+                deleted: 0
+            },
+            raw: true
+        });
         // Kiểm tra xem người dùng có tồn tại không
         if (!user) {
             return res.status(400).json({
@@ -103,28 +104,28 @@ module.exports.login =  async (req, res) => {
         }
         // bảo mật jwt
         const payload = {
-            userId: user.id, 
+            userId: user.id,
             email: user.email,
             fullname: user.fullname
         }
         const token = jwt.sign(
-            payload, 
-            process.env.JWT_SECRET, 
+            payload,
+            process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRE }
         );
-    res.status(200).json({
-        code: "success",
-        message: "Đăng nhập thành công!",
-        token: token,
-        user: payload
-    })
-}catch (error) {
-    console.error(error);
-    return res.status(500).json({
-        code: "error",
-        message: "Đã xảy ra lỗi, vui lòng thử lại sau",
-    });
-}
+        res.status(200).json({
+            code: "success",
+            message: "Đăng nhập thành công!",
+            token: token,
+            user: payload
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            code: "error",
+            message: "Đã xảy ra lỗi, vui lòng thử lại sau",
+        });
+    }
 }
 // module.exports.logout = async (req, res) => {
 //     res.clearCookie("tokenUser");
@@ -134,13 +135,14 @@ module.exports.login =  async (req, res) => {
 // quên mật khẩu
 module.exports.forgotPassword = async (req, res) => {
     const email = req.body.email;
-    const existUser = await User.findOne({ 
-        where: { 
+    const existUser = await User.findOne({
+        where: {
             email,
             deleted: 0,
             status: 1
         },
-        raw:true });
+        raw: true
+    });
     if (!existUser) {
         return res.status(400).json({
             code: "error",
@@ -177,17 +179,17 @@ module.exports.forgotPassword = async (req, res) => {
         otp: hashedOtp,
         expireAt: new Date(Date.now() + 5 * 60 * 1000) // Hết hạn sau 5 phút
     });
-        // việc 2: gửi mã otp qua email cho user
-        const subject = "Xác thực mã OTP";
-        const text = `Mã xác thực của bạn là <b>${otp}</b>. Mã OTP có hiệu lực trong vòng 5 phút, vui lòng không cung cấp mã OTP cho bất kỳ ai.`;
-        sendMailHelper.sendMail(email, subject, text);
-    
+    // việc 2: gửi mã otp qua email cho user
+    const subject = "Xác thực mã OTP";
+    const text = `Mã xác thực của bạn là <b>${otp}</b>. Mã OTP có hiệu lực trong vòng 5 phút, vui lòng không cung cấp mã OTP cho bất kỳ ai.`;
+    sendMailHelper.sendMail(email, subject, text);
+
     // Tự động xóa OTP sau 5 phút
     setTimeout(async () => {
         await ForgotPassword.destroy({
             where: { id: newOtp.id }
         });
-    }, 5 * 60 * 1000);    
+    }, 5 * 60 * 1000);
     res.status(200).json({
         code: "success",
         message: "Gửi mã OTP thành công.",
@@ -201,23 +203,23 @@ module.exports.otpPassword = async (req, res) => {
 
         // Kiểm tra input
         if (!email || !otp) {
-            return res.status(400).json({ 
-                code: "error", 
-                message: "Vui lòng nhập email và OTP!" 
+            return res.status(400).json({
+                code: "error",
+                message: "Vui lòng nhập email và OTP!"
             });
         }
-         // Tìm user theo email
-        const user = await User.findOne({  
-            where: { 
+        // Tìm user theo email
+        const user = await User.findOne({
+            where: {
                 email,
                 deleted: 0,
                 status: 1
-            } 
+            }
         });
         if (!user) {
-            return res.status(400).json({ 
-                code: "error", 
-                message: "Không tìm thấy tài khoản!" 
+            return res.status(400).json({
+                code: "error",
+                message: "Không tìm thấy tài khoản!"
             });
         }
 
@@ -229,26 +231,26 @@ module.exports.otpPassword = async (req, res) => {
 
         // Kiểm tra xem OTP có tồn tại không
         if (!existRecord) {
-            return res.status(400).json({ 
-                code: "error", 
-                message: "Mã OTP không hợp lệ!" 
+            return res.status(400).json({
+                code: "error",
+                message: "Mã OTP không hợp lệ!"
             });
         }
 
         // Kiểm tra OTP đã hết hạn chưa
         if (new Date() > existRecord.expireAt) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 code: "error",
-                message: "Mã OTP đã hết hạn!" 
+                message: "Mã OTP đã hết hạn!"
             });
         }
 
         // So sánh OTP nhập vào với OTP đã mã hóa trong database
         const isMatch = await bcrypt.compare(otp, existRecord.otp);
         if (!isMatch) {
-            return res.status(400).json({ 
-                code: "error", 
-                message: "Mã OTP không chính xác!" 
+            return res.status(400).json({
+                code: "error",
+                message: "Mã OTP không chính xác!"
             });
         }
         // Xóa OTP sau khi xác minh thành công (tránh lạm dụng OTP cũ)
@@ -259,7 +261,7 @@ module.exports.otpPassword = async (req, res) => {
         const newPassword = generateHelper.generateRandomString(10);
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         await User.update({ password: hashedNewPassword }, { where: { id: user.id } });
-        
+
         // Gửi email mật khẩu mới
         const subject = "Mật khẩu mới";
         const text = `Mật khẩu mới của bạn là <b>${newPassword}</b>. vui lòng không cung cấp mã OTP cho bất kỳ ai.`;
@@ -274,9 +276,9 @@ module.exports.otpPassword = async (req, res) => {
 
     } catch (error) {
         console.error("Lỗi xác thực OTP:", error);
-        return res.status(500).json({ 
-            code: "error", 
-            message: "Có lỗi xảy ra, vui lòng thử lại!" 
+        return res.status(500).json({
+            code: "error",
+            message: "Có lỗi xảy ra, vui lòng thử lại!"
         });
     }
 };
@@ -303,12 +305,12 @@ module.exports.changePassword = async (req, res) => {
         }
 
         // Tìm user trong database
-        const user = await User.findOne({ 
-            where: { 
-                id: userId, 
-                deleted: 0, 
-                status: 1 
-            } 
+        const user = await User.findOne({
+            where: {
+                id: userId,
+                deleted: 0,
+                status: 1
+            }
         });
         if (!user) {
             return res.status(400).json({
@@ -345,3 +347,88 @@ module.exports.changePassword = async (req, res) => {
         });
     }
 };
+
+// hiển thị thông tin cá nhân
+module.exports.profile = async (req, res) => {
+    try {
+        const user = await User.findOne({
+            attributes: [
+                "id",
+                "fullname",
+                "email",
+                "address",
+                "phone",
+                "image",
+                "birthday",
+                "gender"
+            ],
+            where: {
+                id:req.user.userId,
+                deleted: 0
+            },
+            raw:true
+        });
+        if (!user) {
+            return res.status(404).json({ error: "Người dùng không tồn tại!" });
+        }
+        console.log(user)
+        res.status(200).json({
+            code: "success",
+            message: "Hiển thị thông tin thành công!",
+            user: user
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng!" });
+    }
+};
+
+// thay đổi thông tin
+module.exports.updateProfile = async (req, res) => {
+    const { fullname, email, address, phone, image, birthday, gender } = req.body;
+    if (!req.user || !req.user.userId) {
+        return res.status(401).json({ message: "Token không hợp lệ hoặc không có quyền truy cập!" });
+    }
+
+    try {
+        const user = await User.findOne({
+            where: {
+                id: req.user.userId, 
+                deleted: 0 
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "Người dùng không tồn tại" });
+        }
+
+        // Cập nhật thông tin người dùng
+        const updatedUser = await user.update({
+            fullname,
+            address,
+            phone,
+            image,
+            birthday,
+            gender
+        });
+        const responseUser = {
+            fullname: updatedUser.fullname,
+            email: updatedUser.email,
+            address: updatedUser.address,
+            phone: updatedUser.phone,
+            image: updatedUser.image,
+            birthday: updatedUser.birthday,
+            gender: updatedUser.gender
+        };
+        res.status(200).json({
+            code: "success",
+            message: "Cập nhật thông tin người dùng thành công!",
+            user: responseUser
+        });
+    } catch (error) {
+        console.error("Error details:", error); // Log chi tiết lỗi
+        return res.status(500).json({
+            message: "Đã xảy ra lỗi khi cập nhật thông tin người dùng!",
+            error: error.message
+        });
+    }
+}
