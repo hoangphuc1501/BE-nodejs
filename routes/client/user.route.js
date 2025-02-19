@@ -1,5 +1,7 @@
 const express = require("express");
 const route = express.Router();
+const multer  = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const controller = require("../../controllers/client/user.controller");
 const authMiddleware  = require("../../middlewares/authMiddleware");
@@ -14,5 +16,5 @@ route.post("/password/forgot", controller.forgotPassword);
 route.post("/password/otp", controller.otpPassword);
 route.post("/password/change", authMiddleware.authenticateToken ,controller.changePassword);
 route.get("/profile", authMiddleware.authenticateToken ,controller.profile);
-route.patch("/updateProfile", authMiddleware.authenticateToken ,controller.updateProfile);
+route.patch("/updateProfile", authMiddleware.authenticateToken,controller.updateProfile);
 module.exports = route;

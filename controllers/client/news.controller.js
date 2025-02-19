@@ -128,3 +128,27 @@ module.exports.categogyNews = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+// danh sách tin tức nổi bật
+module.exports.newsFeature = async (req, res) => {
+    try {
+        const newsList = await News.findAll({
+            where: {
+                deleted: 0,
+                status: 1,
+                featured: 1
+            },
+            attributes: ["id", "title", "content", "image", "slug", "author", "createdAt", "featured"],
+            include: [{ model: NewsCategory, as: "category", attributes: ["id", "name"] }],
+            order: [["position", "DESC"]],
+            limit: 6
+        });
+        res.json({
+            code: "success",
+            message: "Hiển thị danh sách tin tức nổi bật thành công.",
+            newsList: newsList
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

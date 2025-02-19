@@ -12,7 +12,7 @@ const sendMailHelper = require("../../helpers/sendMail.helper");
 // Đăng ký
 module.exports.register = async (req, res) => {
     try {
-        const { fullname, email, phone, password } = req.body;
+        const {fullname, email, phone, password } = req.body;
         // Kiểm tra nếu email đã tồn tại
         const existingUser = await User.findOne({
             where: {
@@ -271,8 +271,6 @@ module.exports.otpPassword = async (req, res) => {
             code: "success",
             message: "Xác thực OTP thành công, mật khẩu mới đã được gửi qua email của bạn."
         });
-
-
 
     } catch (error) {
         console.error("Lỗi xác thực OTP:", error);

@@ -57,7 +57,7 @@ const User = sequelize.define("User", {
     },
     deleted: {
         type: DataTypes.TINYINT,
-        defaultValue: 0, // Đặt giá trị mặc định là 0 (false)
+        defaultValue: 0, 
     },
     createdAt: {
         type: DataTypes.DATE,

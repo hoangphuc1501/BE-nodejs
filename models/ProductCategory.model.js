@@ -1,52 +1,64 @@
 const { DataTypes } = require('sequelize');
+const sequelize = require("../config/database");
 
-module.exports = (sequelize) => {
-    const ProductCategories = sequelize.define('ProductCategories', {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        image: {
-            type: DataTypes.STRING,
-        },
-        description: {
-            type: DataTypes.TEXT,
-        },
-        parentID: {
-            type: DataTypes.INTEGER,
-            defaultValue: 0,
-        },
-        status: {
-            type: DataTypes.TINYINT,
-            defaultValue: 1,
-        },
-        position: {
-            type: DataTypes.INTEGER,
-            defaultValue: 0,
-        },
-        slug: {
-            type: DataTypes.STRING,
-        },
-        createAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-        },
-        updateAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-        },
-        deleteAt: {
-            type: DataTypes.DATE,
-        },
-    }, {
-        tableName: 'productcategories',
-        timestamps: false,
-    });
 
-    return ProductCategories;
-};
+const ProductCategories = sequelize.define('ProductCategories', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true,
+    },
+    name: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+    },
+    image: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    status: {
+        type: DataTypes.TINYINT,
+        defaultValue: 1,
+    },
+    parentID: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    deleted: {
+        type: DataTypes.TINYINT,
+        defaultValue: 0,
+    },
+    slug: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    deletedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+}, {
+    tableName: 'productcategories',
+    timestamps: false,
+});
+ProductCategories.hasMany(ProductCategories, { as: "subCategories", foreignKey: "parentID" });
+ProductCategories.belongsTo(ProductCategories, { as: "parentCategory", foreignKey: "parentID" });
+
+
+module.exports = ProductCategories;
