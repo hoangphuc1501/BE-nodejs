@@ -15,6 +15,18 @@ const Brands = sequelize.define('Brands', {
         type: DataTypes.TEXT('long'),
         allowNull: true,
     },
+    slug: {
+        type: DataTypes.STRING,
+        unique: true,
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     deleted: {
         type: DataTypes.TINYINT,
         defaultValue: 0,

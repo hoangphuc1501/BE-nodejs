@@ -1,6 +1,7 @@
 const { where } = require("sequelize");
 const ProductCategories = require("../../models/ProductCategory.model");
 const Product = require("../../models/product.model");
+const Brands = require("../../models/brand.model");
 const ProductVariant = require("../../models/productVariant.model");
 const { Op } = require("sequelize");
 
@@ -112,6 +113,35 @@ module.exports.category = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+// danh mục sản phẩm cha
+module.exports.categoryParent = async (req, res) => {
+    try {
+    const categoryParent = await ProductCategories.findAll({
+        where: {
+            deleted: 0,
+            status: 1,
+            parentID: null
+        },
+        attributes: [
+            "id",
+            "name",
+            "image",
+            "description",
+            "slug",
+            "parentID",
+            "position"
+        ]
+    })
+    res.json({
+        code: "success",
+        message: "Hiển thị danh mục sản phẩm thành công.",
+        categoryParent
+    });
+    }catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 
 // lấy sản phẩm mới
 module.exports.newProduct = async (req, res) => {
@@ -188,7 +218,7 @@ module.exports.getProductsByCategory = async (req, res) => {
         });
         const categoryIds = subCategories.map(cat => cat.id);
         categoryIds.push(id);
-        
+
         // Tìm sản phẩm theo danh mục
         const products = await Product.findAll({
             where: {
@@ -274,10 +304,10 @@ module.exports.search = async (req, res) => {
                     model: ProductVariant,
                     as: "productsvariants",
                     attributes: ["id", "price", "image", "specialPrice", "discount"],
-                    required: false,  
+                    required: false,
                 }
             ],
-            order: [["createdAt", "DESC"]]  
+            order: [["createdAt", "DESC"]]
         });
 
         if (products.length === 0) {
@@ -307,3 +337,31 @@ module.exports.search = async (req, res) => {
         return res.status(500).json({ message: 'Đã có lỗi xảy ra!' });
     }
 };
+
+// Thương hiệu
+module.exports.brands = async (req, res) => {
+    try {
+        const brands = await Brands.findAll({
+            where: {
+                deleted: 0,
+                status: 1
+            },
+            attributes: [
+                "id",
+                "name",
+                "image",
+                "description",
+                "slug",
+                "position"
+            ]
+        })
+        return res.status(200).json({
+            code: "success",
+            message: "Tìm kiếm sản phẩm thành công.",
+            brands
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Lỗi khi lấy danh sách thương hiệu' });
+    }
+
+}

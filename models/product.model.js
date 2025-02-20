@@ -29,6 +29,10 @@ const Products = sequelize.define('Products', {
         type: DataTypes.TINYINT,
         defaultValue: 0,
     },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     deleted: {
         type: DataTypes.TINYINT,
         defaultValue: 0,
