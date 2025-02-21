@@ -5,20 +5,19 @@ const ProductVariants = require("../../models/productVariant.model");
 
 module.exports.cartPost = async (req, res) => {
     try {
-        const { productsVariantId, quantity } = req.body;
+        const { productsvariantId, quantity } = req.body;
+
         const userId = req.user.userId;
-        console.log(userId)
         if (!userId) {
             return res.status(401).json({
                 code: "error",
                 message: "Người dùng chưa đăng nhập!"
             });
         }
-        // Kiểm tra biến thể sản phẩm có tồn tại không
-        // const productVariant = await ProductVariants.findByPk(productsVariantID);
 
+        // Kiểm tra biến thể sản phẩm có tồn tại không
         const productVariant = await ProductVariants.findOne({
-            where: { id: productsVariantId },
+            where: { id: productsvariantId },
             include: [
                 {
                     model: Products,
@@ -27,13 +26,13 @@ module.exports.cartPost = async (req, res) => {
                 }
             ]
         });
-        console.log(productVariant)
         if (!productVariant) {
             return res.status(404).json({
                 code: "error",
                 message: "Biến thể sản phẩm không tồn tại!"
             });
         }
+        
         // Kiểm tra số lượng tồn kho
         if (quantity > productVariant.stock) {
             return res.status(404).json({
@@ -43,10 +42,9 @@ module.exports.cartPost = async (req, res) => {
         }
 
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const cartItem = await Carts.findOne({
-            where: { userId, productsVariantID }
+        let  cartItem = await Carts.findOne({
+            where: { userId, productsvariantId }
         });
-        console.log(cartItem)
         if (cartItem) {
             // Nếu đã có, cập nhật số lượng mới
             const newQuantity = cartItem.quantity + quantity;
@@ -78,7 +76,7 @@ module.exports.cartPost = async (req, res) => {
             // Nếu chưa có, thêm mới vào giỏ hàng
             cartItem = await Carts.create({
                 userId,
-                productsVariantID,
+                productsvariantId,
                 quantity
             });
 

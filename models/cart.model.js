@@ -15,7 +15,7 @@ const Carts = sequelize.define("Carts", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    productsVariantID: {
+    productsvariantId: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -42,7 +42,7 @@ User.hasMany(Carts, { foreignKey: "userId" });
 Carts.belongsTo(User, { foreignKey: "userId" });
 
 
-Carts.belongsTo(ProductVariants, { foreignKey: "productVariantID" });
+Carts.belongsTo(ProductVariants, { foreignKey: "productsvariantId" });
 ProductVariants.belongsTo(Product, { foreignKey: "ProductID" });
 
 module.exports = Carts;
