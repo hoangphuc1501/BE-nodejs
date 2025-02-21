@@ -13,10 +13,6 @@ const ProductVariants = sequelize.define('ProductVariants', {
         allowNull: false,
         validate: { min: 0 },
     },
-    image: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     status: {
         type: DataTypes.TINYINT,
         defaultValue: 1,
@@ -49,10 +45,6 @@ const ProductVariants = sequelize.define('ProductVariants', {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    version: {
-        type: DataTypes.TINYINT,
-        defaultValue: 1,
-    },
     ProductID: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -61,7 +53,7 @@ const ProductVariants = sequelize.define('ProductVariants', {
     tableName: 'productsvariants',
     timestamps: false,
 });
-Products.hasMany(ProductVariants, { foreignKey: "productID", as: "productsvariants" });
-ProductVariants.belongsTo(Products, { foreignKey: "productID", as: "products" });
+Products.hasMany(ProductVariants, { foreignKey: "productID", as: "variants" });
+ProductVariants.belongsTo(Products, { foreignKey: "productID", as: "product" });
 
 module.exports = ProductVariants;

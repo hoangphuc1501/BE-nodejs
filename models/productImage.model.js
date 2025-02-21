@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require("../config/database");
+const ProductVariants = require('./productVariant.model');
 
 
 const ProductImages = sequelize.define('ProductImages', {
@@ -32,5 +33,7 @@ const ProductImages = sequelize.define('ProductImages', {
     timestamps: false,
 });
 
+ProductVariants.hasMany(ProductImages, { foreignKey: "productVariantID", as: "images" });
+ProductImages.belongsTo(ProductVariants, { foreignKey: "productVariantID" });
 
 module.exports = ProductImages;

@@ -75,6 +75,6 @@ Brands.hasMany(Products, { foreignKey: "brandID", as: "products" });
 Products.belongsTo(Brands, { foreignKey: "brandID", as: "brands" });
 
 ProductCategories.hasMany(Products, { foreignKey: "categoriesID", as: "products" });
-Products.belongsTo(ProductCategories, { foreignKey: "categoriesID", as: "productCategories" });
+Products.belongsTo(ProductCategories, { foreignKey: "categoriesID", as: "categories" });
 
 module.exports = Products;
