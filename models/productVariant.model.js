@@ -53,7 +53,7 @@ const ProductVariants = sequelize.define('ProductVariants', {
     tableName: 'productsvariants',
     timestamps: false,
 });
-Products.hasMany(ProductVariants, { foreignKey: "productID", as: "variants" });
-ProductVariants.belongsTo(Products, { foreignKey: "productID", as: "product" });
+Products.hasMany(ProductVariants, { foreignKey: "ProductID", as: "variants" });
+ProductVariants.belongsTo(Products, { foreignKey: "ProductID", as: "product" });
 
 module.exports = ProductVariants;
