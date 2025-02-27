@@ -1,19 +1,22 @@
-const Product = require("../../models/product.model");
+
 const User = require("../../models/user.model");
 const Favorite = require("../../models/favorite.model");
 const ProductVariants = require("../../models/productVariant.model");
+const Products = require("../../models/product.model");
+const ProductImages = require("../../models/productImage.model");
 
 
 // danh sách yêu thích
 module.exports.index = async (req, res) => {
     try {
-        if (!req.user) {
+        const userId = req.user.userId;
+        if (!userId) {
             return res.status(400).json({
                 code: "error",
                 message: "Vui lòng đăng nhập!"
             });
         }
-        const userId = req.user.userId;
+        
 
         const favorites = await Favorite.findAll({
             where: { userId },
@@ -21,17 +24,53 @@ module.exports.index = async (req, res) => {
                 {
                     model: ProductVariants,
                     as: "productVariants",
-                    attributes: ["id", "price", "image", "size", "color", "stock", "discount", "specialPrice", "ProductID"],
+                    attributes: [
+                        "id", 
+                        "price", 
+                        "size", 
+                        "color", 
+                        "discount", 
+                        "specialPrice", 
+                        "ProductID"
+                    ],
                     include: [
                         {
-                            model: Product,
-                            as: "products",
-                            attributes: ["id", "title", "brandID", "description", "codeProduct", "slug"],
+                            model: Products,
+                            as: "product",
+                            attributes: [
+                                "id", 
+                                "title", 
+                                "brandID", 
+                                "categoriesID", 
+                                "description", 
+                                "codeProduct", 
+                                "slug"],
+                            where: { 
+                                status: 1, 
+                                deleted: 0 
+                            }
                         },
+                        {
+                            model: ProductImages,
+                            as: "images", 
+                            attributes: ["id", "image"], 
+                            where: { 
+                                deleted: 0, 
+                                status: 1 } 
+                        }
+                        
                     ],
                 },
             ],
+            order: [['createdAt', 'DESC']],
         });
+
+        if (!favorites || favorites.length === 0) {
+            return res.status(200).json({
+                code: "success",
+                message: "Chưa có sản phẩm yêu thích."
+            });
+        }
 
         res.status(200).json({
             code: "success",
@@ -40,22 +79,25 @@ module.exports.index = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Lỗi server', error });
+        res.status(500).json({
+            code: "error",
+            message: "Đã xảy ra lỗi khi lấy danh sách yêu thích.",
+            error
+        });
     }
 }
 
 // thêm yêu thích
 module.exports.favoritePost = async (req, res) => {
     try {
-        // kiểm tra user có đăng nhập chưa
-        if (!req.user) {
+        
+        const userId = req.user.userId;
+        if (!userId) {
             return res.status(400).json({
                 code: "error",
                 message: "Vui lòng đăng nhập!"
             });
         }
-
-        const userId = req.user.userId;
         const { productvariantId } = req.body;
 
         // kiểm tra xem sản phẩm có tồn tại không

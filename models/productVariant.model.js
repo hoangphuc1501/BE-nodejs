@@ -17,15 +17,9 @@ const ProductVariants = sequelize.define('ProductVariants', {
         type: DataTypes.TINYINT,
         defaultValue: 1,
     },
-    code: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-    },
-    stock: {
-        type: DataTypes.INTEGER,
+    deleted: {
+        type: DataTypes.TINYINT,
         defaultValue: 0,
-        validate: { min: 0 },
     },
     specialPrice: {
         type: DataTypes.INTEGER,

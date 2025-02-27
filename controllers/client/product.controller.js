@@ -1,16 +1,100 @@
 const { where } = require("sequelize");
 const ProductCategories = require("../../models/ProductCategory.model");
-const Product = require("../../models/product.model");
 const Brands = require("../../models/brand.model");
 const { Op } = require("sequelize");
 const ProductVariants = require("../../models/productVariant.model");
 const ProductImages = require("../../models/productImage.model");
+const Products = require("../../models/product.model");
 
 
 // danh sách sản phẩm 
+// module.exports.index = async (req, res) => {
+    
+//     try {
+//         const products = await Products.findAll({
+//             where: {
+//                 deleted: 0,
+//                 status: 1
+//             },
+//             attributes: [
+//                 "id",
+//                 "title",
+//                 "slug"
+//             ],
+//             include: [
+//                 {
+//                     model: ProductCategories,
+//                     as: "categories",
+//                     attributes: [
+//                         'id',
+//                         "name"
+//                     ]
+//                 },
+//                 {
+//                     model: ProductVariants,
+//                     as: "variants",
+//                     attributes: [
+//                         "id",
+//                         "price",
+//                         "specialPrice",
+//                         "discount"
+//                     ],
+//                     required: false,
+//                     include: [
+//                         {
+//                             model: ProductImages,
+//                             as: "images",
+//                             attributes: ["id", "image"],
+//                             required: false,
+//                             limit: 1,
+//                         }
+//                     ]
+//                 },
+//             ],
+//             order: order
+//         });
+//         // Định dạng dữ liệu trả về
+//         const formattedProducts = products.map((product) => {
+//             // lấy biến thể đầu tiên
+//             const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
+//             // lấy hình ảnh đầu tiên
+//             const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
+
+//             return {
+//                 id: product.id,
+//                 title: product.title,
+//                 slug: product.slug,
+//                 category: product.categories?.name || null,
+//                 image: firstImage,
+//                 variant: firstVariant
+//                     ? {
+//                         id: firstVariant.id,
+//                         price: firstVariant.price,
+//                         specialPrice: firstVariant.specialPrice,
+//                         discount: firstVariant.discount
+//                     }
+//                     : null
+//             };
+//         });
+//         res.json({
+//             code: "success",
+//             message: "hiển thị danh sách sản phẩm thành công.",
+//             data: formattedProducts
+//         });
+//     } catch (error) {
+//         res.status(500).json({ code: "error", message: error.message });
+//     }
+// }
+
 module.exports.index = async (req, res) => {
+    // Lấy tham số phân trang từ query
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10; 
+    const skip = (page - 1) * limit;
+
     try {
-        const products = await Product.findAll({
+        const { count, rows: products } = await Products.findAndCountAll({
             where: {
                 deleted: 0,
                 status: 1
@@ -50,11 +134,13 @@ module.exports.index = async (req, res) => {
                     ]
                 },
             ],
+            limit: limit,
+            offset: skip
         });
         // Định dạng dữ liệu trả về
         const formattedProducts = products.map((product) => {
             // lấy biến thể đầu tiên
-            const firstVariant = product.productsvariants?.length > 0 ? product.productsvariants[0] : null;
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
             // lấy hình ảnh đầu tiên
             const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
@@ -62,7 +148,7 @@ module.exports.index = async (req, res) => {
                 id: product.id,
                 title: product.title,
                 slug: product.slug,
-                category: product.productCategories?.name || null,
+                category: product.categories?.name || null,
                 image: firstImage,
                 variant: firstVariant
                     ? {
@@ -74,11 +160,16 @@ module.exports.index = async (req, res) => {
                     : null
             };
         });
-
         res.json({
             code: "success",
             message: "hiển thị danh sách sản phẩm thành công.",
-            data: formattedProducts
+            data: formattedProducts,
+            pagination: {
+                totalItems: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                perPage: limit
+            }
         });
     } catch (error) {
         res.status(500).json({ code: "error", message: error.message });
@@ -88,7 +179,7 @@ module.exports.index = async (req, res) => {
 // chi tiết sản phẩm
 module.exports.detail = async (req, res) => {
     try {
-        const product = await Product.findOne({
+        const product = await Products.findOne({
             where: {
                 slug: req.params.slug,
                 deleted: 0,
@@ -106,6 +197,11 @@ module.exports.detail = async (req, res) => {
             ],
             include: [
                 {
+                    model: Brands, 
+                    as: "brands",
+                    attributes: ["id", "name"] 
+                },
+                {
                     model: ProductVariants,
                     as: "variants",
                     attributes: [
@@ -115,8 +211,6 @@ module.exports.detail = async (req, res) => {
                         "price",
                         "discount",
                         "specialPrice",
-                        "stock",
-                        "code"
                     ],
                     include: [
                         {
@@ -171,7 +265,7 @@ module.exports.detail = async (req, res) => {
 // lấy sản phẩm mới
 module.exports.newProduct = async (req, res) => {
     try {
-        const products = await Product.findAll({
+        const products = await Products.findAll({
             where: {
                 deleted: 0,
                 status: 1
@@ -217,13 +311,13 @@ module.exports.newProduct = async (req, res) => {
             limit: 10
         });
         const formattedProducts = products.map((product) => {
-            const firstVariant = product.productsvariants?.length > 0 ? product.productsvariants[0] : null;
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
             const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
             return {
                 id: product.id,
                 title: product.title,
-                category: product.productCategories?.name || null,
+                category: product.categories?.name || null,
                 slug: product.slug,
                 position: product.position,
                 image: firstImage,
@@ -251,7 +345,7 @@ module.exports.newProduct = async (req, res) => {
 // sản phẩm nổi bật
 module.exports.featureProduct = async (req, res) => {
     try {
-        const products = await Product.findAll({
+        const products = await Products.findAll({
             where: {
                 deleted: 0,
                 status: 1,
@@ -298,13 +392,13 @@ module.exports.featureProduct = async (req, res) => {
             limit: 10
         });
         const formattedProducts = products.map((product) => {
-            const firstVariant = product.productsvariants?.length > 0 ? product.productsvariants[0] : null;
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
             const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
             return {
                 id: product.id,
                 title: product.title,
-                category: product.productCategories?.name || null,
+                category: product.categories?.name || null,
                 slug: product.slug,
                 position: product.position,
                 image: firstImage,
@@ -329,79 +423,184 @@ module.exports.featureProduct = async (req, res) => {
     }
 }
 
+// sản phẩm giảm giá 
+module.exports.productSale = async (req, res) => {
+    try {
+        const products = await Products.findAll({
+            where: {
+                deleted: 0,
+                status: 1
+            },
+            attributes: [
+                "id",
+                "title",
+                "slug",
+                "position",
+                "featured"
+            ],
+            include: [
+                {
+                    model: ProductCategories,
+                    as: "categories",
+                    attributes: [
+                        'id',
+                        "name"
+                    ]
+                },
+                {
+                    model: ProductVariants,
+                    as: "variants",
+                    attributes: [
+                        "id",
+                        "price",
+                        "specialPrice",
+                        "discount"
+                    ],
+                    required: false,
+                    include: [
+                        {
+                            model: ProductImages,
+                            as: "images",
+                            attributes: ["id", "image"],
+                            required: false,
+                            limit: 1,
+                        }
+                    ],
+                    order: [["discount", "DESC"]],
+                },
+            ],
+            limit: 10
+        });
+        const formattedProducts = products.map((product) => {
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
+            const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
+
+            return {
+                id: product.id,
+                title: product.title,
+                category: product.categories?.name || null,
+                slug: product.slug,
+                position: product.position,
+                image: firstImage,
+                variant: firstVariant
+                    ? {
+                        id: firstVariant.id,
+                        price: firstVariant.price,
+                        specialPrice: firstVariant.specialPrice,
+                        discount: firstVariant.discount
+                    }
+                    : null
+            };
+        });
+        res.json({
+            code: "success",
+            message: "Hiển thị danh sách Giảm giá thành công.",
+            data: formattedProducts
+        });
+    } catch (error) {
+        res.status(500).json({ code: "error", message: error.message });
+    }
+}
 
 // lấy sản phẩm theo danh mục
-// module.exports.getProductsByCategory = async (req, res) => {
-//     try {
-//         const { id } = req.params;
+module.exports.getProductsByCategoryId = async (req, res) => {
+    try {
+        console.log("Category ID received:", req.params.id)
+        const { id } = req.params;
+        // console.log(id)
 
-//         if (!id) {
-//             return res.status(400).json({
-//                 code: "error",
-//                 message: "Danh mục không hợp lệ!"
-//             });
-//         }
-//         const subCategories = await ProductCategories.findAll({
-//             where: { parentId: id },
-//             attributes: ["id"]
-//         });
-//         const categoryIds = subCategories.map(cat => cat.id);
-//         categoryIds.push(id);
+        if (!id) {
+            return res.status(400).json({
+                code: "error",
+                message: "Danh mục không hợp lệ!"
+            });
+        }
+        const subCategories = await ProductCategories.findAll({
+            where: { parentId: id },
+            attributes: ["id"]
+        });
+        const categoryIds = subCategories.map(cat => cat.id);
+        categoryIds.push(id);
 
-//         // Tìm sản phẩm theo danh mục
-//         const products = await Product.findAll({
-//             where: {
-//                 categoriesID: { [Op.in]: categoryIds },
-//                 deleted: 0,
-//                 status: 1
-//             },
-//             attributes: ["id", "title"],
-//             include: [
-//                 {
-//                     model: ProductCategories,
-//                     as: "productCategories",
-//                     attributes: ["id", "name"]
-//                 },
-//                 {
-//                     model: ProductVariant,
-//                     as: "productsvariants",
-//                     attributes: ["id", "price", "image", "specialPrice", "discount"],
-//                     required: false
-//                 }
-//             ],
-//             limit: 6
-//         });
+        // Tìm sản phẩm theo danh mục
+        const products = await Products.findAll({
+            where: {
+                categoriesID: { [Op.in]: categoryIds },
+                deleted: 0,
+                status: 1
+            },
+            attributes: ["id", "title", "slug"],
+            include: [
+                {
+                    model: ProductCategories,
+                    as: "categories",
+                    attributes: ["id", "name"]
+                },
+                {
+                    model: ProductVariants,
+                    as: "variants",
+                    attributes: [
+                        "id",
+                        "price",
+                        "specialPrice",
+                        "discount"
+                    ],
+                    required: false,
+                    include: [
+                        {
+                            model: ProductImages,
+                            as: "images",
+                            attributes: ["id", "image"],
+                            required: false,
+                            limit: 1,
+                        }
+                    ]
+                },
+            ],
+            limit: 6
+        });
 
-//         if (products.length === 0) {
-//             return res.json({
-//                 code: "success",
-//                 message: "Không có sản phẩm nào trong danh mục này.",
-//                 data: []
-//             });
-//         }
+        if (products.length === 0) {
+            return res.json({
+                code: "success",
+                message: "Không có sản phẩm nào trong danh mục này.",
+                data: []
+            });
+        }
 
-//         // Định dạng dữ liệu trả về
-//         const formattedProducts = products.map((product) => {
-//             const firstVariant = product.productsvariants.length > 0 ? product.productsvariants[0] : null;
+        // Định dạng dữ liệu trả về
+        const formattedProducts = products.map((product) => {
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
+            const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
-//             return {
-//                 id: product.id,
-//                 title: product.title,
-//                 category: product.productCategories?.name || null,
-//                 variant: firstVariant
-//             };
-//         });
+            return {
+                id: product.id,
+                title: product.title,
+                category: product.categories?.name || null,
+                slug: product.slug,
+                image: firstImage,
+                variant: firstVariant
+                    ? {
+                        id: firstVariant.id,
+                        price: firstVariant.price,
+                        specialPrice: firstVariant.specialPrice,
+                        discount: firstVariant.discount
+                    }
+                    : null
+            };
+        });
 
-//         res.json({
-//             code: "success",
-//             message: "Lấy danh sách sản phẩm theo danh mục thành công.",
-//             data: formattedProducts
-//         });
-//     } catch (error) {
-//         res.status(500).json({ code: "error", message: error.message });
-//     }
-// }
+        res.json({
+            code: "success",
+            message: "Lấy danh sách sản phẩm theo danh mục thành công.",
+            data: formattedProducts
+        });
+    } catch (error) {
+        res.status(500).json({ code: "error", message: error.message });
+    }
+}
 
+// lấy sản phẩm theo slug
 module.exports.getProductsByCategory = async (req, res) => {
     try {
         const { slug } = req.params;
@@ -448,7 +647,7 @@ module.exports.getProductsByCategory = async (req, res) => {
         }
 
         // Truy vấn sản phẩm theo danh mục cha và con
-        const products = await Product.findAll({
+        const products = await Products.findAll({
             where: {
                 categoriesID: { [Op.in]: categoryIds },
                 deleted: 0,
@@ -535,45 +734,81 @@ module.exports.search = async (req, res) => {
         }
 
         // Tìm kiếm sản phẩm theo tiêu chí title hoặc description
-        const products = await Product.findAll({
+        const products = await Products.findAll({
             where: {
-                deleted: 0,   // Chỉ tìm sản phẩm chưa bị xóa
-                status: 1,    // Chỉ tìm sản phẩm có trạng thái 'active'
+                deleted: 0,  
+                status: 1,    
                 [Op.or]: [
                     { title: { [Op.like]: `%${query}%` } },
                     { description: { [Op.like]: `%${query}%` } }
                 ]
             },
-            attributes: ["id", "title", "createdAt"],  // Chọn các trường cần thiết
+            attributes: [
+                "id",
+                "title",
+                "slug",
+                "position",
+            ],
             include: [
                 {
                     model: ProductCategories,
-                    as: "productCategories",
-                    attributes: ['id', 'name']  // Thêm thông tin danh mục
+                    as: "categories",
+                    attributes: [
+                        'id',
+                        "name"
+                    ]
                 },
                 {
-                    model: ProductVariant,
-                    as: "productsvariants",
-                    attributes: ["id", "price", "image", "specialPrice", "discount"],
+                    model: ProductVariants,
+                    as: "variants",
+                    attributes: [
+                        "id",
+                        "price",
+                        "specialPrice",
+                        "discount"
+                    ],
                     required: false,
-                }
+                    include: [
+                        {
+                            model: ProductImages,
+                            as: "images",
+                            attributes: ["id", "image"],
+                            required: false,
+                            limit: 1,
+                        }
+                    ],
+                    order: [["discount", "DESC"]],
+                },
             ],
-            order: [["createdAt", "DESC"]]
+            order: [["position", "DESC"]],
         });
 
         if (products.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy sản phẩm phù hợp.' });
+            return res.status(404).json({ 
+                code: "error",
+                message: "Không tìm thấy sản phẩm phù hợp." });
         }
 
         // Format lại dữ liệu để trả về
         const formattedProducts = products.map((product) => {
-            const firstVariant = product.productsvariants.length > 0 ? product.productsvariants[0] : null;
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
+            const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
             return {
                 id: product.id,
                 title: product.title,
-                category: product.productCategories?.name || null,  // Lấy tên danh mục
-                variant: firstVariant  // Lấy thông tin của biến thể đầu tiên (nếu có)
+                category: product.categories?.name || null,
+                slug: product.slug,
+                position: product.position,
+                image: firstImage,
+                variant: firstVariant
+                    ? {
+                        id: firstVariant.id,
+                        price: firstVariant.price,
+                        specialPrice: firstVariant.specialPrice,
+                        discount: firstVariant.discount
+                    }
+                    : null
             };
         });
 
@@ -588,7 +823,7 @@ module.exports.search = async (req, res) => {
         return res.status(500).json({ message: 'Đã có lỗi xảy ra!' });
     }
 };
-// hết danh sach2 sản phẩm
+// hết danh sach sản phẩm
 
 // danh mục sản phẩm
 module.exports.category = async (req, res) => {

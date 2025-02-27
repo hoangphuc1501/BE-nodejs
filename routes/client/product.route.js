@@ -9,6 +9,7 @@ route.get("/", controller.index);
 route.get("/detail/:slug", controller.detail);
 route.get("/newProduct", controller.newProduct);
 route.get("/feature", controller.featureProduct);
+route.get("/productSale", controller.productSale);
 route.get("/search", controller.search);
 
 
@@ -16,5 +17,6 @@ route.get("/search", controller.search);
 route.get("/category", controller.category);
 route.get("/categoryParent", controller.categoryParent);
 route.get("/category/:slug", controller.getProductsByCategory);
+route.get("/categoryID/:id", controller.getProductsByCategoryId);
 route.get("/brands", controller.brands);
 module.exports = route;

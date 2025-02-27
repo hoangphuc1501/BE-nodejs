@@ -31,10 +31,6 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING(20),
         allowNull: true,
     },
-    role: {
-        type: DataTypes.TINYINT,
-        allowNull: false,
-    },
     image: {
         type: DataTypes.TEXT('long'),
         allowNull: true,
