@@ -358,11 +358,13 @@ module.exports.profile = async (req, res) => {
                 "phone",
                 "image",
                 "birthday",
-                "gender"
+                "gender",
+                "createdAt"
             ],
             where: {
                 id:req.user.userId,
-                deleted: 0
+                deleted: 0,
+                status:1
             },
             raw:true
         });
@@ -391,7 +393,8 @@ module.exports.updateProfile = async (req, res) => {
         const user = await User.findOne({
             where: {
                 id: req.user.userId, 
-                deleted: 0 
+                deleted: 0,
+                status:1
             }
         });
 
@@ -406,7 +409,7 @@ module.exports.updateProfile = async (req, res) => {
             phone,
             image,
             birthday,
-            gender
+            gender,
         });
         const responseUser = {
             fullname: updatedUser.fullname,
@@ -415,7 +418,8 @@ module.exports.updateProfile = async (req, res) => {
             phone: updatedUser.phone,
             image: updatedUser.image,
             birthday: updatedUser.birthday,
-            gender: updatedUser.gender
+            gender: updatedUser.gender,
+            createdAt: updatedUser.createdAt
         };
         res.status(200).json({
             code: "success",
@@ -430,3 +434,14 @@ module.exports.updateProfile = async (req, res) => {
         });
     }
 }
+
+// module.exports.getAccount = async (req, res) => {
+//     const user = req.user
+    
+//     res.status(200).json({
+//         code: "success",
+//         message: "lấy thông tin người dùng thành công!",
+//         user
+        
+//     });
+// }

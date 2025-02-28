@@ -138,14 +138,37 @@ module.exports.newsFeature = async (req, res) => {
                 status: 1,
                 featured: 1
             },
-            attributes: ["id", "title", "content", "image", "slug", "author", "createdAt", "featured"],
+            attributes: ["id", "title", "content", "image", "slug", "author", "createdAt", "featured", "Views"],
             include: [{ model: NewsCategory, as: "category", attributes: ["id", "name"] }],
             order: [["position", "DESC"]],
-            limit: 6
+            limit: 8
         });
         res.json({
             code: "success",
             message: "Hiển thị danh sách tin tức nổi bật thành công.",
+            newsList: newsList
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// tin tức trang chủ
+module.exports.newsHomePage = async (req, res) => {
+    try {
+        const newsList = await News.findAll({
+            where: {
+                deleted: 0,
+                status: 1
+            },
+            attributes: ["id", "title", "content", "image", "slug", "author", "createdAt"],
+            include: [{ model: NewsCategory, as: "category", attributes: ["id", "name"] }],
+            order: [["position", "DESC"]],
+            limit: 8
+        });
+        res.json({
+            code: "success",
+            message: "Hiển thị danh sách tin tức thành công.",
             newsList: newsList
         });
     } catch (error) {

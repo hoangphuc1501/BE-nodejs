@@ -17,4 +17,5 @@ route.post("/password/otp", controller.otpPassword);
 route.post("/password/change", authMiddleware.authenticateToken ,controller.changePassword);
 route.get("/profile", authMiddleware.authenticateToken ,controller.profile);
 route.patch("/updateProfile", authMiddleware.authenticateToken,controller.updateProfile);
+// route.get("/account", authMiddleware.authenticateToken ,controller.getAccount);
 module.exports = route;

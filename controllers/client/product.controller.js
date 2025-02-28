@@ -90,7 +90,7 @@ module.exports.index = async (req, res) => {
     // Lấy tham số phân trang từ query
     let { page, limit } = req.query;
     page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10; 
+    limit = parseInt(limit) || 12; 
     const skip = (page - 1) * limit;
 
     try {
@@ -529,7 +529,7 @@ module.exports.getProductsByCategoryId = async (req, res) => {
                 deleted: 0,
                 status: 1
             },
-            attributes: ["id", "title", "slug"],
+            attributes: ["id", "title", "slug", "position"],
             include: [
                 {
                     model: ProductCategories,
@@ -557,6 +557,7 @@ module.exports.getProductsByCategoryId = async (req, res) => {
                     ]
                 },
             ],
+            order: [["position", "DESC"]],
             limit: 6
         });
 
@@ -690,7 +691,7 @@ module.exports.getProductsByCategory = async (req, res) => {
 
         // Định dạng dữ liệu trả về
         const formattedProducts = products.map((product) => {
-            const firstVariant = product.productsvariants?.length > 0 ? product.productsvariants[0] : null;
+            const firstVariant = product.variants?.length > 0 ? product.variants[0] : null;
             const firstImage = firstVariant?.images?.length > 0 ? firstVariant.images[0].image : null;
 
             return {
@@ -698,7 +699,7 @@ module.exports.getProductsByCategory = async (req, res) => {
                 title: product.title,
                 slug: product.slug,
                 positon: product.positon,
-                category: product.productCategories?.name || null,
+                category: product.categories?.name || null,
                 image: firstImage,
                 variant: firstVariant
                     ? {
@@ -713,7 +714,7 @@ module.exports.getProductsByCategory = async (req, res) => {
 
         res.json({
             code: "success",
-            message: `Lấy danh sách sản phẩm theo danh mục ${category.name} thành công.`,
+            message: `${category.name} `,
             data: formattedProducts
         });
     } catch (error) {

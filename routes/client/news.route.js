@@ -10,4 +10,5 @@ route.get("/newsFeature", controller.newsFeature);
 route.get("/detail/:slug", controller.newsDetail);
 route.get("/category/:slug", controller.getNewsByCategory);
 route.get("/category", controller.categogyNews);
+route.get("/newsHome", controller.newsHomePage);
 module.exports = route;
